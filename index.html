@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AGEC 2018 Lab Sessions | 115-1</title>
+<meta name="description" content="Lab session materials for Introductory Applied Econometrics (AGEC 2018), Department of Agricultural Economics, National Taiwan University, Fall 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Martel:wght@300;400;700&family=Lato:wght@400;700&family=Fira+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FDF7E9;
+    --gold:#EFBE43;
+    --gold-soft:#F6DB96;
+    --ink:#333333;
+    --ink-soft:#6b6355;
+    --link:#4466B0;
+    --card:#FFFFFF;
+    --line:#EADFC6;
+    color-scheme: light;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:"Lato","Helvetica Neue","PingFang TC","Microsoft JhengHei",sans-serif;
+    font-size:17px;
+    line-height:1.65;
+  }
+  h1,h2,h3{font-family:"Martel",Georgia,"PingFang TC","Microsoft JhengHei",serif;font-weight:400;color:var(--ink);}
+  code{font-family:"Fira Mono",Consolas,monospace;font-size:.9em;border:1px solid var(--gold-soft);padding:1px 5px;border-radius:4px;background:#fffdf6;}
+  a{color:var(--link);}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+
+  /* header */
+  header{background:var(--cream);border-bottom:4px solid var(--gold);padding:54px 0 40px;}
+  .header-row{display:flex;gap:24px;align-items:flex-start;justify-content:space-between;}
+  .eyebrow{font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 10px;font-weight:700;}
+  h1{font-size:2.45rem;line-height:1.15;margin:0 0 6px;font-weight:700;color:var(--link);}
+  .zh-title{font-size:1.2rem;color:var(--ink-soft);margin:0 0 18px;}
+  .meta{margin:0;color:var(--ink-soft);font-size:.97rem;}
+  .logo{width:78px;height:auto;flex-shrink:0;}
+
+  /* sections */
+  section{padding:44px 0;border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+  h2{font-size:1.45rem;margin:0 0 22px;padding-bottom:8px;border-bottom:2px solid var(--gold);display:inline-block;}
+  p{margin:0 0 14px;}
+  .lead{max-width:62ch;}
+
+  /* slide list */
+  .weeks{list-style:none;padding:0;margin:0;display:grid;gap:14px;}
+  .week{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--gold);border-radius:6px;padding:18px 22px;}
+  .week-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:6px;}
+  .week-no{font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);}
+  .week-date{font-size:.9rem;color:var(--ink-soft);}
+  .week-title{font-size:1.12rem;font-weight:700;margin:0 0 4px;}
+  .week-title a{text-decoration:none;}
+  .week-title a:hover{text-decoration:underline;}
+  .week-topics{margin:0;color:var(--ink-soft);font-size:.95rem;}
+  .pending{background:#fffdf6;border-left-style:dashed;}
+
+  /* cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:20px 22px;}
+  .card h3{margin:0 0 12px;font-size:1.08rem;font-weight:700;}
+  .card ul{margin:0;padding-left:1.1em;}
+  .card li{margin-bottom:7px;}
+  li::marker{color:var(--gold);}
+  .tag{display:inline-block;background:var(--gold-soft);color:#5a4a1d;font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 9px;border-radius:999px;vertical-align:middle;}
+
+  /* table */
+  .table-scroll{overflow-x:auto;}
+  table{border-collapse:collapse;width:100%;font-size:.97rem;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-weight:700;color:var(--ink-soft);font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;}
+  .sub{color:var(--ink-soft);font-size:.9rem;}
+
+  .note{background:#fffdf6;border:1px solid var(--gold-soft);border-radius:6px;padding:16px 20px;margin-top:22px;font-size:.95rem;}
+  .note strong{color:#8a6a12;}
+
+  footer{padding:34px 0 48px;color:var(--ink-soft);font-size:.9rem;}
+
+  @media (max-width:600px){
+    body{font-size:16px;}
+    h1{font-size:1.9rem;}
+    .logo{width:56px;}
+    header{padding:36px 0 28px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-row">
+    <div>
+      <p class="eyebrow">National Taiwan University &middot; Dept. of Agricultural Economics</p>
+      <h1>Introductory Applied Econometrics</h1>
+      <p class="zh-title">應用計量經濟學導論（AGEC 2018）— Lab Sessions / 實習課</p>
+      <p class="meta">Fall 2026 (115-1) &middot; Lab instructor: Chun-Chin Wang (Leo) &middot; <a href="mailto:d14627001@ntu.edu.tw">d14627001@ntu.edu.tw</a></p>
+    </div>
+    <img class="logo" src="https://www.agec.ntu.edu.tw/uploads/asset/data/675f864c74ccc38a768f8254/%E6%9C%AA%E4%BE%86%E5%B1%95%E6%9C%9B%E5%9C%96%E7%89%87.png" alt="NTU Department of Agricultural Economics">
+  </div>
+</header>
+
+<main>
+
+<section id="about">
+  <div class="wrap">
+    <h2>About this page</h2>
+    <p class="lead">This page collects the lab session slides for AGEC 2018. Slides are posted here after each session and open directly in your browser — no download needed. Use the <b>&larr;</b> and <b>&rarr;</b> keys to move between slides.</p>
+    <p class="lead">The lab meets weekly and counts for <strong>20% of your course grade</strong>. Everything is taught and graded in <code>R</code>, so bring a laptop with R and RStudio installed.</p>
+  </div>
+</section>
+
+<section id="slides">
+  <div class="wrap">
+    <h2>Slides</h2>
+    <ul class="weeks">
+      <li class="week">
+        <div class="week-head">
+          <span class="week-no">Week 1</span>
+          <span class="week-date">Sep 14, 2026</span>
+        </div>
+        <p class="week-title"><a href="IntroductoryAE_0914/IntroductoryAE_0914.html">Course overview &amp; R refresher</a></p>
+        <p class="week-topics">Lab policy and grading &middot; data types &middot; vectors, matrices and data frames &middot; indexing &middot; create / read / update / delete &middot; first steps with <code>dplyr</code></p>
+      </li>
+      <li class="week">
+        <div class="week-head">
+          <span class="week-no">Week 2</span>
+          <span class="week-date">Sep 21, 2026</span>
+        </div>
+        <p class="week-title"><a href="IntroductoryAE_0921/IntroductoryAE_0921.html">Pipes and merging data</a></p>
+        <p class="week-topics">The pipe operator revisited &middot; vertical merges with <code>rbind()</code> and <code>bind_rows()</code> &middot; horizontal merges with <code>full_join()</code>, <code>left_join()</code>, <code>right_join()</code>, <code>inner_join()</code>, <code>semi_join()</code> and <code>anti_join()</code></p>
+      </li>
+      <li class="week pending">
+        <div class="week-head">
+          <span class="week-no">Coming up</span>
+          <span class="tag">Updated weekly</span>
+        </div>
+        <p class="week-topics">Later sessions cover data visualisation with <code>ggplot2</code>, more data wrangling with <code>dplyr</code> and <code>tidyr</code>, and regression in practice — OLS and fixed effects, difference-in-differences, and instrumental variables. Links appear here as each session is posted.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section id="grading">
+  <div class="wrap">
+    <h2>Lab grading</h2>
+    <p class="lead">The lab accounts for 20% of the semester grade, split as follows.</p>
+    <div class="grid">
+      <div class="card">
+        <h3>Attendance — 5%</h3>
+        <ul>
+          <li>Roll call at every lab session.</li>
+          <li>To request leave, email <a href="mailto:d14627001@ntu.edu.tw">d14627001@ntu.edu.tw</a> beforehand.</li>
+          <li>The first two absences cost nothing, whether excused or not; from the third onward, each one deducts 1% from the semester grade.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Lab assignments — 5%</h3>
+        <ul>
+          <li>Two assignments, 100 points in total.</li>
+          <li>Submit your code together with a short report or your results.</li>
+          <li>Submission through NTU COOL.</li>
+          <li>Work submitted within 24 hours of the deadline loses 10 points; after 24 hours it is not accepted.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Computer exams — 10%</h3>
+        <ul>
+          <li>Two in-lab exams: <strong>Oct 12</strong> and <strong>Dec 7</strong>.</li>
+          <li>14:20–16:00, computer classrooms Boya 408 and 409.</li>
+          <li>Open book. A USB drive is allowed; internet access and other electronic devices are not.</li>
+          <li>Submission details and how to use the lab computers will be explained before each exam.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note">
+      <strong>On collaboration.</strong> Working through problems with classmates and coming to office hours is encouraged — copying someone else&rsquo;s work is not. If something is unclear, email the TA early rather than the night before the deadline.
+    </div>
+  </div>
+</section>
+
+<section id="goals">
+  <div class="wrap">
+    <h2>What the lab covers</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>By the end of the semester you should be able to</h3>
+        <ul>
+          <li>Work comfortably in R and RStudio.</li>
+          <li>Clean, reshape and merge real datasets.</li>
+          <li>Build clear figures with <code>ggplot2</code>.</li>
+          <li>Estimate and interpret the models from lecture: OLS and fixed effects, difference-in-differences, and instrumental variables.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Office hours</h3>
+        <ul>
+          <li>Mondays 16:20–18:20; location to be announced.</li>
+          <li>Send your question by email ahead of time so it can be prepared.</li>
+          <li>Extra credit is given for completing the end-of-semester teaching evaluation.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="staff">
+  <div class="wrap">
+    <h2>Teaching assistants</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Responsibilities</th><th>Contact</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Chun-Chin Wang (Leo)<br><span class="sub">王俊欽 · PhD student, Agricultural Economics</span></td>
+            <td>Teaches the lab sessions; grades lab assignments and lab exams.</td>
+            <td><a href="mailto:d14627001@ntu.edu.tw">d14627001@ntu.edu.tw</a></td>
+          </tr>
+          <tr>
+            <td>Li-Yin Hsu<br><span class="sub">徐麗茵 · PhD student, Epidemiology &amp; Preventive Medicine (Biostatistics)</span></td>
+            <td>Grades lecture assignments and the midterm and final exams.</td>
+            <td><a href="mailto:leyin2030@gmail.com">leyin2030@gmail.com</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    AGEC 2018 Introductory Applied Econometrics — lab materials, Fall 2026 (115-1).<br>
+    Slides built with <a href="https://github.com/yihui/xaringan">xaringan</a>. Questions: <a href="mailto:d14627001@ntu.edu.tw">d14627001@ntu.edu.tw</a>.
+  </div>
+</footer>
+
+</body>
+</html>
