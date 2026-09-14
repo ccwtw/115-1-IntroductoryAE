@@ -360,8 +360,11 @@ knitr::include_graphics("./df.png")
 ```
 ]
 .panel[.panel-name[In Practice]
+```{r eval = F}
+library(ggplot2)
+```
 ```{r}
-df <- mpg %>% select(1:5) %>% head() %>% as.data.frame(); df
+df <- mpg %>% select(1:5) %>% head(); df
 ```
 ]
 .panel[.panel-name[Index]
