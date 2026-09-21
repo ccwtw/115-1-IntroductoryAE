@@ -1401,12 +1401,11 @@ head(penguins)
 
 ``` r
 summarize(select(group_by(mutate(drop_na(
-          penguins), bill_ratio = bill_len/ bill_dep), species, sex), species, sex, bill_ratio), min_bill_ratio = min(bill_ratio), .groups = &quot;keep&quot;)
+          penguins), bill_ratio = bill_len/ bill_dep), species, sex), species, sex, bill_ratio), min_bill_ratio = min(bill_ratio), .groups = &quot;drop&quot;)
 ```
 
 ```
 ## # A tibble: 6 × 3
-## # Groups:   species, sex [6]
 ##   species   sex    min_bill_ratio
 ##   &lt;fct&gt;     &lt;fct&gt;           &lt;dbl&gt;
 ## 1 Adelie    female           1.76
@@ -1426,12 +1425,11 @@ penguins %&gt;%
   mutate(bill_ratio = bill_len/ bill_dep) %&gt;% 
   group_by(species, sex) %&gt;%
   select(species, sex, bill_ratio) %&gt;% 
-  summarize(min_bill_ratio = min(bill_ratio), .groups = &#39;keep&#39;)
+  summarize(min_bill_ratio = min(bill_ratio), .groups = &#39;drop&#39;)
 ```
 
 ```
 ## # A tibble: 6 × 3
-## # Groups:   species, sex [6]
 ##   species   sex    min_bill_ratio
 ##   &lt;fct&gt;     &lt;fct&gt;           &lt;dbl&gt;
 ## 1 Adelie    female           1.76
@@ -1599,6 +1597,7 @@ d5 %&gt;% rename(id = order) %&gt;% bind_rows(d6)
 ```
 ]
 ]
+
 
 ---
 ## Horizontally Merge
@@ -1952,7 +1951,225 @@ people %&gt;% left_join(club, by = &quot;id&quot;)
 ## 8     6 Sandy    82 &lt;NA&gt;
 ```
 
+---
+## Practice：Vertically Merge
+甲班與乙班的期中考成績分別存在兩張表，乙班因為有補考，所以多了一個 `makeup` 欄位，而且學號欄位的名稱也不一樣。
 
+
+``` r
+class_a &lt;- tribble(
+  ~id, ~name,   ~midterm,
+  1,   &quot;Tim&quot;,   88,
+  2,   &quot;Irene&quot;, 76,
+  3,   &quot;Cindy&quot;, 95
+)
+class_b &lt;- tribble(
+  ~stu_id, ~name,   ~midterm, ~makeup,
+  4,       &quot;Chloe&quot;, 55,       70,
+  5,       &quot;Sandy&quot;, 82,       NA,
+  6,       &quot;Leo&quot;,   48,       65
+)
+```
+
+---
+## Practice：Vertically Merge
+.panelset[
+.panel[.panel-name[question]
+#### 1. 直接執行 `rbind(class_a, class_b)` 會發生什麼事？為什麼？
+
+#### 2. 把兩個班級合併成一張完整的成績表 `grade`。
+
+#### 3. 合併後 `makeup` 欄位有幾個 `NA`？分別是誰？
+]
+
+.panel[.panel-name[answer1]
+
+``` r
+rbind(class_a, class_b)
+```
+
+```
+## Error in rbind(deparse.level, ...): numbers of columns of arguments do not match
+```
+`rbind()` 要求欄位數量完全相同。改用 `bind_rows()` 雖然不會報錯，但名稱不一致的欄位會被當成兩個不同變數：
+
+``` r
+class_a %&gt;% bind_rows(class_b)
+```
+
+```
+## # A tibble: 6 × 5
+##      id name  midterm stu_id makeup
+##   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+## 1     1 Tim        88     NA     NA
+## 2     2 Irene      76     NA     NA
+## 3     3 Cindy      95     NA     NA
+## 4    NA Chloe      55      4     70
+## 5    NA Sandy      82      5     NA
+## 6    NA Leo        48      6     65
+```
+]
+
+.panel[.panel-name[answer2]
+
+``` r
+grade &lt;- class_a %&gt;% bind_rows(class_b %&gt;% rename(id = stu_id))
+grade
+```
+
+```
+## # A tibble: 6 × 4
+##      id name  midterm makeup
+##   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+## 1     1 Tim        88     NA
+## 2     2 Irene      76     NA
+## 3     3 Cindy      95     NA
+## 4     4 Chloe      55     70
+## 5     5 Sandy      82     NA
+## 6     6 Leo        48     65
+```
+** 先 `rename()` 讓索引欄位名稱一致，再 `bind_rows()`。**
+]
+
+.panel[.panel-name[answer3]
+
+``` r
+sum(is.na(grade$makeup))
+```
+
+```
+## [1] 4
+```
+
+``` r
+grade %&gt;% filter(is.na(makeup))
+```
+
+```
+## # A tibble: 4 × 4
+##      id name  midterm makeup
+##   &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+## 1     1 Tim        88     NA
+## 2     2 Irene      76     NA
+## 3     3 Cindy      95     NA
+## 4     5 Sandy      82     NA
+```
+
+]
+]
+
+
+
+---
+## Practice：Horizontally Merge
+`students` 是系上學生名單，`enroll` 是選課紀錄。
+
+
+``` r
+students &lt;- tibble(
+  id   = c(1, 2, 3, 4, 5),
+  name = c(&quot;Tim&quot;, &quot;Irene&quot;, &quot;Cindy&quot;, &quot;Chloe&quot;, &quot;Sandy&quot;),
+  dept = c(&quot;AGEC&quot;, &quot;ECON&quot;, &quot;AGEC&quot;, &quot;STAT&quot;, &quot;AGEC&quot;)
+)
+enroll &lt;- tribble(
+  ~id, ~course,        ~credit,
+  1,   &quot;Econometrics&quot;, 3,
+  1,   &quot;Statistics&quot;,   3,
+  2,   &quot;Econometrics&quot;, 3,
+  3,   &quot;Calculus&quot;,     4,
+  6,   &quot;Statistics&quot;,   3
+)
+```
+
+---
+## Practice：Horizontally Merge 
+.panelset[
+.panel[.panel-name[question]
+#### 1. 保留所有學生資料，將 `enroll` 合併進來存成 `df`。
+
+#### 2. 哪些學生沒有修任何一門課？
+
+#### 3. 列出有修課的學生名單，只保留學生基本資料（不要課程欄位）。
+
+#### 4. 每位學生總共修了幾學分？（沒修課的學生也要出現在結果中）
+]
+
+.panel[.panel-name[answer1]
+
+
+``` r
+df &lt;- students %&gt;% left_join(enroll, by = &quot;id&quot;); df
+```
+
+```
+## # A tibble: 6 × 5
+##      id name  dept  course       credit
+##   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;         &lt;dbl&gt;
+## 1     1 Tim   AGEC  Econometrics      3
+## 2     1 Tim   AGEC  Statistics        3
+## 3     2 Irene ECON  Econometrics      3
+## 4     3 Cindy AGEC  Calculus          4
+## 5     4 Chloe STAT  &lt;NA&gt;             NA
+## 6     5 Sandy AGEC  &lt;NA&gt;             NA
+```
+#### 從 5 筆變成 6 筆：Tim 修了兩門課被複製成 2 列。另外 `enroll` 中 id = 6 不在名單裡，`left_join` 直接忽略。
+]
+
+.panel[.panel-name[answer2]
+
+
+``` r
+students %&gt;% anti_join(enroll, by = &quot;id&quot;)
+```
+
+```
+## # A tibble: 2 × 3
+##      id name  dept 
+##   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     4 Chloe STAT 
+## 2     5 Sandy AGEC
+```
+]
+
+.panel[.panel-name[answer3]
+
+
+``` r
+students %&gt;% semi_join(enroll, by = &quot;id&quot;)
+```
+
+```
+## # A tibble: 3 × 3
+##      id name  dept 
+##   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;
+## 1     1 Tim   AGEC 
+## 2     2 Irene ECON 
+## 3     3 Cindy AGEC
+```
+** 用 `semi_join()` 而不是 `inner_join()`：Tim 修兩門課也只會出現一次。**
+]
+
+.panel[.panel-name[answer4]
+
+
+``` r
+df %&gt;% group_by(id, name) %&gt;%
+  summarise(total_credit = sum(credit, na.rm = TRUE), .groups = &quot;drop&quot;)
+```
+
+```
+## # A tibble: 5 × 3
+##      id name  total_credit
+##   &lt;dbl&gt; &lt;chr&gt;        &lt;dbl&gt;
+## 1     1 Tim              6
+## 2     2 Irene            3
+## 3     3 Cindy            4
+## 4     4 Chloe            0
+## 5     5 Sandy            0
+```
+** 要從 `df`（left_join 的結果）算起，沒修課的 Chloe、Sandy 才會留下來變成 0。**
+]
+]
 
 ---
 class: center, middle, inverse
