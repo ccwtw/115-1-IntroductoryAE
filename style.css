@@ -243,6 +243,24 @@ p{margin:0 0 14px;}
 .week-topics{margin:0;color:var(--ink-soft);font-size:.95rem;}
 .pending{background:#fffdf6;border-left-style:dashed;}
 
+/* holiday / no-class week */
+.holiday{
+  background:linear-gradient(180deg,#fdfaf2,var(--cream));
+  border-left:5px dashed var(--green);
+  text-align:center;
+}
+.holiday .week-head{justify-content:center;}
+.holiday .week-title{
+  font-family:"Martel",Georgia,"PingFang TC","Microsoft JhengHei",serif;
+  font-weight:400;margin-bottom:8px;
+}
+.holiday .week-title::before{
+  content:"\2726";display:block;color:var(--gold);
+  font-size:1.5rem;line-height:1;margin-bottom:8px;
+}
+.holiday .week-topics{max-width:52ch;margin:0 auto;}
+.holiday .tag{background:#dff0e6;color:var(--green);}
+
 /* info cards */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;}
 .card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:20px 22px;}
