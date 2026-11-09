@@ -1,0 +1,530 @@
+---
+title: "應用計量經濟學導論"
+subtitle: "實習課"
+author: |
+  <div style="margin-top:-18px; line-height:1.2;">
+    <span style="font-weight:700;">王俊欽</span><br/>
+    <span style="font-weight:700;">d14627001@ntu.edu.tw</span><br/>
+    <span style="font-weight:700;">2026/11/09</span><br/>
+    &nbsp;
+  </div>
+output:
+  xaringan::moon_reader:
+    self_contained: true
+    css: xaringan-themer.css
+    #css: [xaringan-themer.css, zh-CN.css]
+    #lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+```{r}
+
+```
+
+layout: true
+background-image: url(https://www.agec.ntu.edu.tw/uploads/asset/data/675f864c74ccc38a768f8254/%E6%9C%AA%E4%BE%86%E5%B1%95%E6%9C%9B%E5%9C%96%E7%89%87.png)
+background-position: 98% 2%
+background-size: 5%
+
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(ggplot2)
+library(vistributions)
+library(gginference)
+setwd(dirname(rstudioapi::documentPath()))
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(echo = TRUE, tidy = FALSE)
+xaringanExtra::use_panelset()
+xaringanExtra::use_clipboard()
+xaringanExtra::use_extra_styles(hover_code_line = TRUE)
+```
+```{r xaringanExtra, echo = FALSE}
+xaringanExtra::use_progress_bar(color = "#EFBE43", location = "bottom")
+```
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_duo(
+  # colors
+  primary_color = "#FDF7E9",
+  secondary_color = "#EFBE43",
+  header_color = "#333333",
+  text_color = "#333333",
+  code_inline_color = colorspace::lighten("#333333"),
+  text_bold_color = colorspace::lighten("#333333"),
+  link_color = "#4466B0",
+  title_slide_text_color = "#4466B0",
+
+  # fonts
+  header_font_google = google_font("Martel", "300", "400"),
+  text_font_google = google_font("Lato"),
+  code_font_google = google_font("Fira Mono")
+)
+
+style_extra_css(
+  # 只針對段落 (p) 和列表 (li) 內的 `code`
+  list(
+    "p code, li code" = list(  
+      "border" = "1px solid #F6DB96",
+      "padding" = "2px 4px",
+      "border-radius" = "4px"
+      ),
+    "ul ul" = list(
+      "list-style-type" = "'▸'"  # 第二層使用三角形 (▸)
+      ),
+    "ul ul ul" = list(
+      "list-style-type" = "'✔'"  # 第三層使用勾勾 (✔)
+      ),
+    # 置中
+    ".middle_block" = list(
+      "position" = "absolute",
+      "top" = "50%",
+      "left" = "50%", # 使與預設靠左距離相同
+      "transform" = "translate(-50%, -50%)",
+      "width" = "85%",              # 控制內文寬度（可調整）
+      "text-align" = "left"         
+      ),
+    # 縮排
+    ".indent" = list(
+      "text-indent" = "2em"
+      ),
+    # 自動換行
+    "pre code" = list(
+      "white-space" = "pre-wrap",
+      "word-wrap" = "break-word"
+      ),
+    "pre" = list(
+      "border" = "none",
+      "box-shadow" = "2px 2px 2px 2px #F7EEDA",
+      "padding" = "0.1em",
+      "background" = "none !important",
+      "overflow-x" = "auto",
+      "border-radius" = "1px"
+      ),
+    # 條列圖示顏色
+    "li::marker" = list(
+      "content" = "• ",
+      "color" =  "#EFBE43"
+      )
+    )
+  )
+
+```
+
+
+```{r, echo = FALSE}
+options(servr.daemon = TRUE)
+```
+
+---
+## Today: Exam 1 Review
+
+- **訂正加分**
+
+  - <span style="line-height: 2;">今日實習課下課前繳交訂正且正確 R scripts，exam 1 加 15 分<span>
+
+- 資料回顧
+
+  - <span style="line-height: 2;">`Main.csv`：各國、各期的當地售價 `local_price` 與匯率 `dollar_ex`<span>
+  - <span style="line-height: 2;">`Info.csv`：各國、各年的人均 GDP `gdp_pc`<span>
+  - <span style="line-height: 2;">`Region.csv`：各國名稱與洲別 `region`<span>
+
+---
+## Step 0: Joining the Files
+.panelset[
+.panel[.panel-name[Main]
+main 資料預計將是本次考題的**主表！**
+```{r}
+main   <- read.csv("Main.csv"); glimpse(main)
+```
+]
+.panel[.panel-name[Info]
+`Info.csv` 是**一個國家、一年** 為一列
+```{r}
+info   <- read.csv("Info.csv"); head(info)
+```
+]
+.panel[.panel-name[info]
+`Region.csv` 是**一個國家** 為一列
+```{r}
+region   <- read.csv("Region.csv"); region
+```
+]
+.panel[.panel-name[merge]
+```{r}
+data <- main %>%
+  left_join(region, by = "iso_a3") %>%
+  left_join(info,   by = c("iso_a3", "year"))
+```
+```{r}
+c(main = nrow(main), data = nrow(data))
+```
+
+確保資料合併後與**主表**一樣，合併前後都是 1744 列 。
+]
+]
+
+---
+## Step 0: When the Join Goes Wrong
+
+.panelset[
+.panel[.panel-name[by year only]
+`Info.csv` 每一年有 40 幾個國家，只用 `year` 合併，會變成「某年的每一國」去對上「同年的每一國」：
+```{r warning = TRUE}
+main %>% left_join(info, by = "year") %>% nrow()
+```
+1744 列變成 8 萬多列，而且 R 會出現警告 `many-to-many`。
+]
+.panel[.panel-name[Why]
+`main` 的**臺灣 2026 年**只有 **2 列**；`info` 的 **2026 年**有 **53 列，每一國各一列**：
+```{r}
+main %>% filter(iso_a3 == "TWN", year == 2026) %>% select(date, local_price)
+
+info %>% filter(year == 2026) %>% select(iso_a3, gdp_pc) %>% head(2)
+```
+兩邊的 `year` 都是 2026，所以不知道臺灣該合併 info 中 53 國裡的哪一國。
+]
+.panel[.panel-name[Mismatched]
+結果是 2026 年臺灣的 2 列會各自去配對上 info中 2026 年的 53 個國家，變成 106 列：
+```{r warning = FALSE}
+main %>% filter(iso_a3 == "TWN", year == 2026) %>%
+  left_join(info, by = "year") %>%
+  select(date, iso_a3.x, local_price, iso_a3.y, gdp_pc) %>% head(4)
+```
+臺灣的大麥克價格被配上阿聯、阿根廷、澳洲…… 的人均 GDP。`Info.csv` 的一列 = 一個國家 × 一年，因此索引鍵為 `c("iso_a3", "year")`，缺一不可。
+]
+.panel[.panel-name[Check it]
+`left_join` 以左表（主表）為主，列數**不應該**變多。合併完可以檢查：
+```{r}
+nrow(data) == nrow(main)
+```
+或是直接肉眼看右上方 Environment 中的資訊。
+]
+]
+
+---
+## Q1: Coverage and Survey Dates
+
+.panelset[
+.panel[.panel-name[Question]
+#### What period does the dataset cover, and how many different survey dates does it contain?
+
+
+- "what period ... **cover**" → `summarise(min(date), max(date))`
+
+- "how many **different** survey dates" → 先 `unique()` / `distinct()`，再數個數
+]
+.panel[.panel-name[Solution]
+```{r}
+data %>% summarise(min_date = min(date), max_date = max(date))
+```
+```{r}
+main %>% pull(date) %>% unique() %>% length()
+```
+2007-01-01 至 2026-07-01，共 **37** 個不同的調查日期。
+]
+.panel[.panel-name[Common errors]
+- **只答年份**（2007~2026）：題目問的是「時間區間」，`year` 的 min/max 不夠精確，要用 `date`。
+
+- **把列數當成調查日期數**：`nrow(main)` 是 1744，那是「國家 × 日期」的總筆數，不是日期數。
+
+- **一年其實不只調查一次**：所以 `unique(year)` 只有 20 個，但 `unique(date)` 調查日期實際有 37 個。
+
+]
+]
+
+---
+## Q2: Most and Least Expensive
+
+.panelset[
+.panel[.panel-name[Question]
+#### Construct `dollar_price = local_price / dollar_ex`. At the most recent survey date, which country has the most expensive Big Mac and which has the cheapest? Report the country and the price in both cases.
+
+- "**Construct** it" → `mutate()`
+
+- "At the **most recent** survey date" → `filter(date == max(date))`
+
+- "which country has the most expensive" → `filter(dollar_price == max(dollar_price))`
+
+- "**Report** the country and the price" → `select(country, dollar_price)`
+]
+.panel[.panel-name[Solution]
+```{r}
+data <- data %>% mutate(dollar_price = local_price / dollar_ex)
+
+data %>% filter(date == max(date)) %>%
+  filter(dollar_price == max(dollar_price)) %>%
+  select(date, country, dollar_price)
+```
+```{r}
+data %>% filter(date == max(date)) %>%
+  filter(dollar_price == min(dollar_price)) %>%
+  select(date, country, dollar_price)
+```
+]
+.panel[.panel-name[Common errors]
+- **沒有篩選最新一次調查日**：這次考試最常見的扣分項目，Q2、Q3、Q4、Q7 都要先 `filter(date == max(date))`。
+
+- **直接用 `local_price` 排序**：印尼的 `local_price` 是六位數，但那是當地貨幣，不是真的比較貴。**所以才要先建立 dollar_price**。
+
+- **沒有報告國家名稱**：列出國家與 US dollar 價格，只給一個數字不完整。
+]
+]
+
+---
+## Q3: GDP vs. Big Mac Price
+
+.panelset[
+.panel[.panel-name[Question]
+#### Using only the most recent survey date, draw a scatter plot of GDP per capita against the US-dollar price of a Big Mac, and add a fitted straight line.
+
+- "Using only the **most recent** survey date" → `filter(date == max(date))`
+
+- "**draw a scatter plot**" → `ggplot(aes(...)) + geom_point()`
+
+- "**add** a fitted straight line" → `+ geom_smooth(method = "lm")`
+]
+.panel[.panel-name[Solution]
+```{r q3plot, fig.show='hide', message=F}
+data %>% filter(date == max(date)) %>%
+  ggplot(aes(x = dollar_price, y = gdp_pc)) +
+  geom_point() + geom_smooth(method = "lm")
+```
+```{r ref.label='q3plot', echo=FALSE, out.width="38%", fig.align='center', message=FALSE}
+```
+所得越高的國家，大麥克的美元價格大致也越高。
+]
+.panel[.panel-name[Common errors]
+- **沒有 `filter(date == max(date))`**：把 37 期全部畫上去，一個國家會出現 37 次。
+
+- **用 `local_price` 或 `dollar_ex` 當座標**：變數用錯，沒有統一貨幣單位，圖失去意義。
+
+]
+]
+
+---
+## Q4: The Raw Index (usd_raw)
+
+.panelset[
+.panel[.panel-name[Question]
+#### Construct `usd_raw` for every row, then report its value for Taiwan, Switzerland and Indonesia at the most recent survey date, and explain in words what a negative value means.
+
+- "**make a small table** holding the US price on each date" → `filter(iso_a3 == "USA") %>% select(date, dollar_price_us = dollar_price)`
+
+- "**join it back** onto your data **by date**" → `left_join(by = "date")`
+
+- "Construct usd_raw for every row" → `mutate()`，先建立完新變數
+
+- "**then** report ... at the most recent survey date" → 最後才 `filter()`
+]
+.panel[.panel-name[Solution]
+先做一張「各日期的美國價格」小表，再用 `date` 合併回去：
+```{r}
+usa_idx <- data %>% filter(iso_a3 == "USA") %>%
+  select(date, dollar_price_us = dollar_price)
+
+q4 <- data %>% left_join(usa_idx, by = "date") %>%
+  mutate(usd_raw = dollar_price / dollar_price_us - 1) %>%
+  filter(date == max(date))
+
+q4 %>% filter(iso_a3 %in% c("TWN", "CHE", "IDN")) %>%
+  select(country, iso_a3, usd_raw)
+```
+]
+.panel[.panel-name[After the join]
+合併後，每一列都多了一欄「**同一天**的美國價格」`dollar_price_us`：
+```{r}
+data %>% left_join(usa_idx, by = "date") %>%
+  filter(iso_a3 %in% c("USA", "TWN", "CHE"), date >= "2026-01-01") %>%
+  select(date, iso_a3, dollar_price, dollar_price_us) %>%
+  arrange(date, iso_a3)
+```
+同一天的每一國，`dollar_price_us` 都是同一個值（1 月 6.12、7 月 6.22）；換一天就換一個值。分子與分母被放到**同一列**上，`mutate()` 才能逐列相除算出 `usd_raw`。
+]
+.panel[.panel-name[Interpretation]
+臺灣 −0.61 表示：以大麥克價格衡量，**新臺幣相對美元被低估約 61%**。
+
+正值（瑞士 +0.45）則是被高估約 45%。
+
+```{r}
+q4 %>% filter(iso_a3 == "USA") %>% pull(usd_raw)
+```
+美國對自己當然是 0
+]
+.panel[.panel-name[Common errors]
+- **分母不是相同 date 的美國價格**：最常見是把所有日期的美國價格平均，或沒有合併 `date`。
+
+- **用 `local_price` 相除**：兩國幣別不同，相除沒有意義。
+
+]
+]
+
+---
+## Q5: Asia Yearly Average
+
+.panelset[
+.panel[.panel-name[Question]
+#### Plot a bar chart of the average US-dollar price of a Big Mac in each year, for the Asia region only, with the bars in chronological order.
+
+- "for the **Asia region only**" → `filter(region == "Asia")`
+
+- "**in each year**" → `group_by(year)`
+
+- "the **average**" → `summarize(mean(dollar_price))`
+
+- "**Plot a bar chart**" → `geom_bar(stat = "identity")`
+
+]
+.panel[.panel-name[Solution]
+```{r q5plot, fig.show='hide'}
+data %>% filter(region == "Asia") %>% group_by(year) %>%
+  summarize(mean_price = mean(dollar_price, na.rm = T), .groups = "drop") %>%
+  ggplot() + geom_bar(aes(x = year, y = mean_price), stat = "identity")
+```
+```{r ref.label='q5plot', echo=FALSE, out.width="38%", fig.align='center'}
+```
+]
+.panel[.panel-name[Common errors]
+- **x 軸放 `date` 而不是 `year`**：題目問的是「各年度」，一年有兩期要先平均起來。
+
+- **忘記 `filter(region == "Asia")`**：`region` 來自 `Region.csv`，沒合併成功就篩選不到。
+
+- **沒照提示繪圖 `stat = "identity"`**：`geom_bar()` 預設是數次數，要畫「已經算好的平均值」必須加這個參數。
+]
+]
+
+---
+## Q6: Ever Above US$7
+
+.panelset[
+.panel[.panel-name[Question]
+#### Which countries have **ever** had a Big Mac priced above US$7? List all such countries.
+
+**關鍵字對應：**
+
+- "**ever**" → **不需要**篩選日期，要用全部 37 期的資料
+
+- "priced **above US$7**" → `filter(dollar_price >= 7)`
+
+- "**Which countries** ... **List all**" → `pull(country)`，更精確的做法可以再 `unique()`
+]
+.panel[.panel-name[Solution]
+```{r}
+data %>% filter(dollar_price >= 7) %>% pull(country) %>% unique()
+```
+共 9 個國家。
+]
+.panel[.panel-name[Common errors]
+
+- **用 `select()` 而不是 `filter()`**：`select()` 挑欄位（Column），`filter()` 挑列（Row），兩者差別要記清楚。
+
+- **沒有處理重複值**：同一個國家在多期都超過 7 美元，不用 `unique()` / `distinct()` 會重複列出。
+]
+]
+
+---
+## Q7(a): Correlation
+
+.panelset[
+.panel[.panel-name[Question]
+#### Using only the most recent survey date, calculate the correlation coefficient between the US-dollar price of a Big Mac and GDP per capita across countries, and explain what it implies about the relationship between the two variables.
+
+- "Using only the **most recent** survey date" → `filter(date == max(date))`
+
+- "the **correlation coefficient** between A and B" → `cor(A, B)`
+
+- "**explain what it implies**" → 簡短解釋。
+]
+.panel[.panel-name[Solution]
+```{r}
+q7 <- data %>% filter(date == max(date))
+rho <- cor(q7$dollar_price, q7$gdp_pc)
+rho
+```
+ρ ≈ 0.53，兩變數呈**中等強度的正相關**：所得越高的國家，通常大麥克的美元價格傾向越貴。
+]
+.panel[.panel-name[Common errors]
+
+- **變數用錯**：用 `dollar_ex`、`gdp_year`、`local_price`，而不是 `dollar_price` 與 `gdp_pc`。
+
+- **只給數字不解釋**：需要說明「對兩個變數的關係代表什麼」。
+]
+]
+
+---
+## Q7(b): Slope from Correlation
+
+.panelset[
+.panel[.panel-name[Question]
+#### Without running a regression, use the correlation coefficient and the two standard deviations to obtain $\beta_1$ in $dollar\_price = \beta_0 + \beta_1 \, gdp\_pc + \epsilon$, then explain its meaning **including the units**.
+$$\beta_1 = \rho \times \frac{S_{dollar\_price}}{S_{gdp\_pc}}$$
+]
+.panel[.panel-name[Solution]
+```{r}
+beta1 <- rho * sd(q7$dollar_price) / sd(q7$gdp_pc)
+beta1
+```
+和直接跑迴歸的結果完全一致：
+```{r}
+coef(lm(dollar_price ~ gdp_pc, data = q7))[2]
+```
+]
+.panel[.panel-name[Interpretation]
+$\beta_1 \approx 3.1 \times 10^{-5}$，單位是「**每 1 美元**的人均 GDP，對應的大麥克美元價格變化」。
+
+這個數字看起來很小，是因為分母的單位很大。換算成比較好懂的尺度：
+```{r}
+beta1 * 10000
+```
+**當人均 GDP 每多 1 萬美元時，大麥克價格大約貴 0.31 美元。**
+
+解釋係數時**一定要講清楚單位**，不然「0.000031」沒有任何意義。
+]
+]
+
+---
+## Bonus: Reading the Raw Index
+
+.panelset[
+.panel[.panel-name[Question]
+#### In Q4 you found that most currencies look undervalued against the US dollar. Using your answers to (a) and (b), explain why the raw index cannot simply be read as a measure of how far a currency sits from its correct level.
+]
+.panel[.panel-name[Evidence]
+```{r}
+sum(q4$usd_raw < 0, na.rm = TRUE)   # 低估的國家數
+sum(!is.na(q4$usd_raw))             # 有資料的國家數
+```
+53 國中有 41 國為負。**代表這 41 國的貨幣相對美元全都被低估**，包括印尼 −62%、台灣 −61%、印度 −61%、日本 −50%、南韓 −38%、中國 −37%，連加拿大 −7%、澳洲 −4% 都算在內；為正（高估）的只有瑞士、烏拉圭、挪威等 11 國。
+
+全世界大多數貨幣同時對美元被低估的比例太大了將近 8 成，這個結果其實有點難以解釋「貨幣失衡」。
+]
+.panel[.panel-name[Answer]
+**Q4 的證據**：53 國裡 41 國對美元被低估 —— 若真是匯率失衡，應該有高有低，而不是一面倒。
+
+**Q7 的係數**： $\beta_1 > 0$ ，人均 GDP 每多 1 萬美元，大麥克價格會增加約 0.31 美元 —— 價格差異是**可以被所得預測的**。
+
+所以 `usd_raw` 為負或者是大麥克價格較低的原因，可能混合了「匯率可能偏離」與「這個國家本來就比較窮」兩件事。
+]
+
+]
+
+---
+## Things to Remember
+
+1. **合併完先檢查列數**。`left_join` 之後列數變多，就是索引鍵沒用對。
+
+2. **看清楚題目想要的 subset 條件**。Q2/Q3/Q4/Q7 要先篩最近一期，Q6 反而不能篩。
+
+3. **新建立的變數要先算出來再用**。`dollar_price` 沒算好，後面五題都會錯。
+
+4. **`filter()` 挑列、`select()` 挑欄位**，兩個不能互換。
+
+5. **解釋係數一定要講單位**，並且想清楚哪個是 y、哪個是 x。
+
+---
+class: center, middle, inverse
+### 謝謝
+#### 下周見
